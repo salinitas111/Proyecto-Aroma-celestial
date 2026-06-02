@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>AROMA CELESTIAL | Alta Perfumería</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --oro: #d4af37; --negro: #0b0b0b; }
+        body { margin: 0; background: var(--negro); color: white; font-family: 'Montserrat', sans-serif; }
+        nav { background: var(--negro); padding: 20px 60px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--oro); }
+        .logo { font-family: 'Cinzel', serif; color: var(--oro); font-size: 1.8rem; letter-spacing: 2px; cursor: pointer; }
+        .menu-wrapper { display: flex; gap: 30px; align-items: center; }
+        .dropdown { position: relative; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+        .dropdown-content { display: none; position: absolute; background: white; color: black; min-width: 150px; padding: 10px; z-index: 1000; top: 100%; left: 0; border: 1px solid var(--oro); }
+        .dropdown:hover .dropdown-content { display: block; }
+        .dropdown-content div { padding: 5px; cursor: pointer; }
+        .dropdown-content div:hover { color: var(--oro); }
+        .hero { height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1600&q=80') center/cover; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; padding: 50px 10%; }
+        .card { background: #1a1a1a; padding: 20px; text-align: center; border: 1px solid #333; }
+        .card img { width: 100%; height: 200px; object-fit: contain; margin-bottom: 15px; border: 1px solid #222; }
+        .btn-add { background: transparent; color: white; border: 1px solid var(--oro); padding: 10px; width: 100%; cursor: pointer; }
+        .btn-add:hover { background: var(--oro); color: black; }
+        .sidebar { position: fixed; top:0; right:-400px; width:350px; height:100%; background:white; color: black; z-index:2000; padding:20px; transition:0.3s; }
+        .sidebar.open { right: 0; }
+        .close-btn { cursor: pointer; font-size: 1.8rem; float: right; font-weight: bold; }
+
+        /* Estilo Botón WhatsApp */
+        .btn-whatsapp-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #25D366;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 3000;
+            transition: 0.3s;
+        }
+        .btn-whatsapp-float:hover {
+            background: #1ebe5d;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="logo" onclick="resetView()">AROMA CELESTIAL</div>
+    <div class="menu-wrapper">
+        <div class="dropdown" onclick="resetView()">Inicio</div>
+        <div class="dropdown">Marcas ▼
+            <div class="dropdown-content" id="marca-list"></div>
+        </div>
+        <div class="dropdown" onclick="showAbout()">Sobre Nosotros</div>
+        <div onclick="toggleCart()" style="cursor:pointer;"><i class="fa-solid fa-bag-shopping"></i> (<span id="count">0</span>)</div>
+    </div>
+</nav>
+
+<!-- Botón de WhatsApp flotante -->
+<a href="https://wa.me/50360691216" class="btn-whatsapp-float" target="_blank">
+    <i class="fa-brands fa-whatsapp" style="font-size:24px;"></i> Contáctanos
+</a>
+
+<section id="hero" class="hero">
+    <h1>Aroma Celestial</h1>
+    <p>Alta perfumería y elixires de lujo</p>
+</section>
+
+<section id="tienda" style="padding: 50px 0;">
+    <div class="grid" id="product-grid"></div>
+</section>
+
+<section id="about" style="display:none; padding:100px 10%; text-align:center; min-height: 50vh;">
+    <h1>Sobre Nosotros</h1>
+    <p style="max-width: 800px; margin: 0 auto; line-height: 1.6;">Somos Aroma celestial, una franquicia de lociones que busca ofrecer a sus clientes el mejor servicio y calidad en cada uno de sus productos, nos fundamos en 2025 y desde entonces nuestro objetivo es brindar la mayor calidad posible para nuestros clientes.</p>
+</section>
+
+<div class="sidebar" id="sidebar">
+    <span class="close-btn" onclick="toggleCart()">&times;</span>
+    <h3>Tu Carrito</h3>
+    <div id="cart-list"></div>
+    <hr>
+    <p>Total: $<span id="total">0.00</span></p>
+    <button class="btn-add" style="color:black; background:var(--oro);" onclick="checkout()">FINALIZAR COMPRA</button>
+</div>
+
+<script>
+    const productos = [
+        { id: 1, marca: "Chanel", nombre: "N°5 Parfum", precio: 150, img: "https://fimgs.net/mdimg/perfume/375x500.593.jpg" },
+        { id: 2, marca: "Dior", nombre: "Sauvage", precio: 120, img: "https://fimgs.net/mdimg/perfume/375x500.33666.jpg" },
+        { id: 3, marca: "Gucci", nombre: "Flora Garden", precio: 130, img: "https://fimgs.net/mdimg/perfume/375x500.14589.jpg" },
+        { id: 4, marca: "Paco Rabanne", nombre: "1 Million", precio: 110, img: "https://fimgs.net/mdimg/perfume/375x500.3756.jpg" },
+        { id: 5, marca: "Carolina Herrera", nombre: "Good Girl", precio: 140, img: "https://fimgs.net/mdimg/perfume/375x500.39637.jpg" },
+        { id: 6, marca: "Paco Rabanne", nombre: "Lady Million", precio: 125, img: "https://fimgs.net/mdimg/perfume/375x500.9673.jpg" },
+        { id: 7, marca: "Chanel", nombre: "Coco Noir", precio: 160, img: "https://fimgs.net/mdimg/perfume/375x500.15963.jpg" },
+        { id: 8, marca: "Dior", nombre: "J'adore", precio: 135, img: "https://fimgs.net/mdimg/perfume/375x500.218.jpg" },
+        { id: 9, marca: "Gucci", nombre: "Gucci Guilty", precio: 135, img: "https://fimgs.net/mdimg/perfume/375x500.5065.jpg" },
+        { id: 10, marca: "Carolina Herrera", nombre: "212 VIP", precio: 115, img: "https://fimgs.net/mdimg/perfume/375x500.12560.jpg" },
+        { id: 11, marca: "Versace", nombre: "Bright Crystal", precio: 105, img: "https://fimgs.net/mdimg/perfume/375x500.308.jpg" },
+        { id: 12, marca: "Chanel", nombre: "Chance", precio: 145, img: "https://fimgs.net/mdimg/perfume/375x500.683.jpg" },
+        { id: 13, marca: "Dior", nombre: "Hypnotic Poison", precio: 145, img: "https://fimgs.net/mdimg/perfume/375x500.219.jpg" },
+        { id: 14, marca: "Paco Rabanne", nombre: "Invictus", precio: 115, img: "https://fimgs.net/mdimg/perfume/375x500.18567.jpg" },
+        { id: 15, marca: "Versace", nombre: "Crystal Noir", precio: 120, img: "https://fimgs.net/mdimg/perfume/375x500.309.jpg" }
+    ];
+    let carrito = [];
+
+    const marcas = [...new Set(productos.map(p => p.marca))];
+    document.getElementById('marca-list').innerHTML = marcas.map(m => `<div onclick="filter('${m}')">${m}</div>`).join('');
+
+    function render(list = productos) {
+        document.getElementById('product-grid').innerHTML = list.map(p => `
+            <div class="card">
+                <img src="${p.img}" alt="${p.nombre}">
+                <h3>${p.nombre}</h3><p>${p.marca}</p><p>$${p.precio}</p>
+                <button class="btn-add" onclick="add(${p.id})">Agregar al Carrito</button>
+            </div>`).join('');
+    }
+
+    function filter(marca) {
+        document.getElementById('tienda').style.display = 'block';
+        document.getElementById('hero').style.display = 'none';
+        document.getElementById('about').style.display = 'none';
+        render(productos.filter(p => p.marca === marca));
+    }
+
+    function add(id) {
+        carrito.push(productos.find(p => p.id == id));
+        updateCart();
+    }
+
+    function updateCart() {
+        document.getElementById('count').innerText = carrito.length;
+        document.getElementById('cart-list').innerHTML = carrito.map((item, i) => `
+            <div style="margin-bottom:10px;">${item.nombre} - $${item.precio} <span onclick="carrito.splice(${i},1); updateCart()" style="color:red; cursor:pointer;">(Eliminar)</span></div>`).join('');
+        document.getElementById('total').innerText = carrito.reduce((sum, p) => sum + p.precio, 0).toFixed(2);
+    }
+
+    function resetView() {
+        document.getElementById('tienda').style.display = 'block';
+        document.getElementById('hero').style.display = 'flex';
+        document.getElementById('about').style.display = 'none';
+        render();
+    }
+
+    function toggleCart() { document.getElementById('sidebar').classList.toggle('open'); }
+    function checkout() { alert("Gracias por tu compra"); carrito = []; updateCart(); toggleCart(); }
+    function showAbout() {
+        document.getElementById('tienda').style.display = 'none';
+        document.getElementById('hero').style.display = 'none';
+        document.getElementById('about').style.display = 'block';
+    }
+
+    render();
+</script>
+</body>
+</html>
